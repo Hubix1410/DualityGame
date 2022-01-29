@@ -6,11 +6,15 @@ public class Hero2DController : MonoBehaviour
 {
     public float MovementSpeed = 5f;
     public float JumpForce = 5f;
+    public int amountOfJumps;
+    private int RotationDirection;
 
     public GameObject HeroObject;
-
-    private int RotationDirection;
     private Rigidbody2D _rigidbody;
+
+    public bool isGrounded;
+    public LayerMask groundLayer;
+    public Transform gorundCheck;
 
     void Start()
     {
@@ -19,16 +23,30 @@ public class Hero2DController : MonoBehaviour
 
     void Update()
     {
+        if(Input.GetButtonDown("Jump"))
+        {
+            if (amountOfJumps < 1 || isGrounded)
+            {
+                _rigidbody.velocity = Vector2.up * JumpForce;
+                amountOfJumps++;
+            }
+        }
+ 
+        RotationCheck();
+    }
+
+
+    void FixedUpdate()
+    {
         var movement = Input.GetAxis("Horizontal");
         transform.position += new Vector3(movement, 0, 0) * Time.deltaTime * MovementSpeed;
 
-        if(Input.GetButtonDown("Jump"))
-        {
-            _rigidbody.AddForce(new Vector2(0, JumpForce), ForceMode2D.Impulse);
-        }
+        isGrounded = Physics2D.OverlapCircle(gorundCheck.position, 0.2f, groundLayer);
 
-        IsGrounded();
-        RotationCheck();
+        if (isGrounded == true)
+        {
+            amountOfJumps = 0;
+        }
     }
 
     void RotationCheck()
@@ -44,9 +62,5 @@ public class Hero2DController : MonoBehaviour
             HeroObject.transform.Rotate(0, 180, 0);
             RotationDirection = 0;
         }
-    }
-
-    private bool IsGrounded() {
-        return true;
     }
 }
