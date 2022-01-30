@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Hero2DController : MonoBehaviour
 {
+    // 1 is bright
+    // 0 is dark
+    public int CurrentState = 1;
+
+    public GameObject BulletPrefab;
+    public Transform FirePoint;
+
     public float MovementSpeed = 5f;
     public float JumpForce = 5f;
     public int amountOfJumps;
@@ -16,6 +23,8 @@ public class Hero2DController : MonoBehaviour
     public LayerMask groundLayer;
     public Transform gorundCheck;
 
+    public Animator animator;
+
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
@@ -25,13 +34,19 @@ public class Hero2DController : MonoBehaviour
     {
         if(Input.GetButtonDown("Jump"))
         {
-            if (amountOfJumps < 1 || isGrounded)
-            {
-                _rigidbody.velocity = Vector2.up * JumpForce;
-                amountOfJumps++;
-            }
+            Jump();
         }
- 
+
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ChangeState();
+        }
+
+        if (Input.GetButtonDown("Fire1") && CurrentState == 1)
+        {
+            Shoot();
+        }
+
         RotationCheck();
     }
 
@@ -49,6 +64,11 @@ public class Hero2DController : MonoBehaviour
         }
     }
 
+    void Shoot()
+    {
+        Instantiate(BulletPrefab, FirePoint.position, FirePoint.rotation);
+    }
+
     void RotationCheck()
     {
         if (Input.GetKeyDown(KeyCode.A) && RotationDirection == 0)
@@ -62,5 +82,40 @@ public class Hero2DController : MonoBehaviour
             HeroObject.transform.Rotate(0, 180, 0);
             RotationDirection = 0;
         }
+    }
+
+    void Jump()
+    {
+        switch (CurrentState)
+        {
+            case 0:
+                if (isGrounded)
+                {
+                    _rigidbody.velocity = Vector2.up * JumpForce;
+                    amountOfJumps++;
+                }
+                break;
+            case 1:
+                if (amountOfJumps < 1 || isGrounded)
+                {
+                    _rigidbody.velocity = Vector2.up * JumpForce;
+                    amountOfJumps++;
+                }
+                break;
+        }
+    }
+
+    void ChangeState()
+    {
+        switch (CurrentState)
+        {
+            case 0:
+                CurrentState = 1;
+                break;
+            case 1:
+                CurrentState = 0;
+                break;
+        }
+        Debug.Log(CurrentState);
     }
 }
