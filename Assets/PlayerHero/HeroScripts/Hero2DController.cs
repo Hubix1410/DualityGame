@@ -1,29 +1,41 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Hero2DController : MonoBehaviour
 {
     // 1 is bright
     // 0 is dark
     public int CurrentState = 1;
+    public int amountOfJumps;
+    public int RotationDirection;
+
+    public LayerMask groundLayer;
+    public LayerMask spikeLayer;
+    public LayerMask endLayer;
 
     public GameObject BulletPrefab;
+    public GameObject HeroObject;
+
+    public Rigidbody2D _rigidbody;
+
     public Transform FirePoint;
+    public Transform spikesCheck;
+    public Transform spawnPoint;
+    public Transform gorundCheck;
 
     public float MovementSpeed = 5f;
     public float JumpForce = 5f;
-    public int amountOfJumps;
-    private int RotationDirection;
-
-    public GameObject HeroObject;
-    private Rigidbody2D _rigidbody;
 
     public bool isGrounded;
-    public LayerMask groundLayer;
-    public Transform gorundCheck;
+    public bool isTouchingSpikes;
+    public bool endGame;
 
-    public Animator animator;
+    public SpriteRenderer spriteRenderer;
+
+    public Sprite BlackBox;
+    public Sprite WhiteBox;
 
     void Start()
     {
@@ -42,14 +54,13 @@ public class Hero2DController : MonoBehaviour
             ChangeState();
         }
 
-        if (Input.GetButtonDown("Fire1") && CurrentState == 1)
+        if (Input.GetButtonDown("Fire1") && CurrentState == 0)
         {
             Shoot();
         }
 
         RotationCheck();
     }
-
 
     void FixedUpdate()
     {
@@ -61,6 +72,20 @@ public class Hero2DController : MonoBehaviour
         if (isGrounded == true)
         {
             amountOfJumps = 0;
+        }
+
+        isTouchingSpikes = Physics2D.OverlapCircle(spikesCheck.position, 0.6f, spikeLayer);
+
+        if (isTouchingSpikes == true)
+        {
+            ReturnToSpawn();
+        }
+
+        endGame = Physics2D.OverlapCircle(spikesCheck.position, 0.6f, endLayer);
+
+        if (endGame == true)
+        {
+            EndGame();
         }
     }
 
@@ -111,11 +136,24 @@ public class Hero2DController : MonoBehaviour
         {
             case 0:
                 CurrentState = 1;
+                spriteRenderer.sprite = BlackBox;
                 break;
             case 1:
                 CurrentState = 0;
+                spriteRenderer.sprite = WhiteBox;
                 break;
         }
         Debug.Log(CurrentState);
     }
+
+    void ReturnToSpawn()
+    {
+        gameObject.transform.position = spawnPoint.transform.position;
+    }
+
+    void EndGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+    }
+
 }
